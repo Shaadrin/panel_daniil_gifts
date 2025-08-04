@@ -1,0 +1,35 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Анализ подарков Telegram</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+
+<body>
+    <h2>Сравнение цен на подарки Telegram</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>🎁 Подарок Telegram</th>
+                <th>💰 Цена на Thermos (₽)</th>
+                <th>📈 Цена на TG Market (₽)</th>
+                <th>📊 Разница (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for gift in gifts %}
+            <tr>
+                <td>{{ gift.tg_name }}</td>
+                <td>{{ gift.thermos_price }}</td>
+                <td>{{ gift.tgmarket_price }}</td>
+                <td class="{% if gift.delta_percent >= 0 %}positive{% else %}negative{% endif %}">
+                    {{ gift.delta_percent }}%
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

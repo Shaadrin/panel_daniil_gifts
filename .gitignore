@@ -1,0 +1,6 @@
+venv/
+td_db/
+__pycache__/
+td/
+tg_acc_data/
+thermos_gifts.json
