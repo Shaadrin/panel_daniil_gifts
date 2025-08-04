@@ -29,8 +29,7 @@
                 <td>{{ gift.tgmarket_price }}</td>
                 <td class="{% if gift.delta_percent is not none and gift.delta_percent >= 0 %}positive{% else %}negative{% endif %}">
                     {% if gift.delta_percent is not none %}{{ gift.delta_percent }}%{% else %}-{% endif %}
-                <td class="{% if gift.delta_percent >= 0 %}positive{% else %}negative{% endif %}">
-                    {{ gift.delta_percent }}%
+
                 </td>
             </tr>
             {% endfor %}

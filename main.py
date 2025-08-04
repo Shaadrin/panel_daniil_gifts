@@ -62,8 +62,13 @@ async def index(request: Request):
 
 @app.post("/update", response_class=HTMLResponse)
 async def update(request: Request):
-    subprocess.run(["python", "gifts_parcers/parce_thermos_gifts.py"], cwd=BASE_DIR, check=True)
-    subprocess.run(["python", "gifts_parcers/parce_tg_market_kurigram.py"], cwd=BASE_DIR, check=True)
+    try:
+        subprocess.run(["python", "gifts_parcers/parce_thermos_gifts.py"], cwd=BASE_DIR, check=True)
+        subprocess.run(["python", "gifts_parcers/parce_tg_market_kurigram.py"], cwd=BASE_DIR, check=True)
+    except subprocess.CalledProcessError as exc:
+        return HTMLResponse(
+            content=f"Ошибка при обновлении данных: {exc}", status_code=500
+        )
     data = load_data()
     template = templates.get_template("index.html")
     return template.render(request=request, gifts=data)
