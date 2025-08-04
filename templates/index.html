@@ -8,6 +8,9 @@
 </head>
 
 <body>
+    <form action="/update" method="post">
+        <button class="refresh-btn" type="submit">Обновить данные</button>
+    </form>
     <h2>Сравнение цен на подарки Telegram</h2>
     <table>
         <thead>
@@ -24,6 +27,8 @@
                 <td>{{ gift.tg_name }}</td>
                 <td>{{ gift.thermos_price }}</td>
                 <td>{{ gift.tgmarket_price }}</td>
+                <td class="{% if gift.delta_percent is not none and gift.delta_percent >= 0 %}positive{% else %}negative{% endif %}">
+                    {% if gift.delta_percent is not none %}{{ gift.delta_percent }}%{% else %}-{% endif %}
                 <td class="{% if gift.delta_percent >= 0 %}positive{% else %}negative{% endif %}">
                     {{ gift.delta_percent }}%
                 </td>

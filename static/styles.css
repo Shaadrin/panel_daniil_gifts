@@ -11,6 +11,14 @@ h2 {
     margin-bottom: 20px;
 }
 
+.refresh-btn {
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+
 table {
     width: 100%;
     border-collapse: collapse;
