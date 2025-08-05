@@ -11,29 +11,78 @@
     <form action="/update" method="post">
         <button class="refresh-btn" type="submit">Обновить данные</button>
     </form>
+
+    <div class="settings">
+        <label for="exchangeRate">Курс 1 TON в звёздах:</label>
+        <input type="number" id="exchangeRate" value="1" step="any">
+        <label for="currencySelect">Отображать цены в:</label>
+        <select id="currencySelect">
+            <option value="ton">TON</option>
+            <option value="stars">Звезды</option>
+        </select>
+    </div>
     <h2>Сравнение цен на подарки Telegram</h2>
     <table>
         <thead>
             <tr>
                 <th>🎁 Подарок Telegram</th>
-                <th>💰 Цена на Thermos (₽)</th>
-                <th>📈 Цена на TG Market (₽)</th>
+                <th id="thermosHeader">💰 Цена на Thermos (TON)</th>
+                <th id="tgmarketHeader">📈 Цена на TG Market (⭐)</th>
                 <th>📊 Разница (%)</th>
             </tr>
         </thead>
         <tbody>
             {% for gift in gifts %}
-            <tr>
+            <tr data-ton="{{ gift.thermos_price }}" data-stars="{{ gift.tgmarket_price }}">
                 <td>{{ gift.tg_name }}</td>
-                <td>{{ gift.thermos_price }}</td>
-                <td>{{ gift.tgmarket_price }}</td>
-                <td class="{% if gift.delta_percent is not none and gift.delta_percent >= 0 %}positive{% else %}negative{% endif %}">
-                    {% if gift.delta_percent is not none %}{{ gift.delta_percent }}%{% else %}-{% endif %}
-
-                </td>
+                <td class="thermos-price"></td>
+                <td class="tgmarket-price"></td>
+                <td class="delta"></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
+    <script>
+        function updatePrices() {
+            const rateInput = document.getElementById('exchangeRate');
+            const select = document.getElementById('currencySelect');
+            const rate = parseFloat(rateInput.value) || 1;
+            const currency = select.value;
+
+            document.getElementById('thermosHeader').textContent = `💰 Цена на Thermos (${currency === 'ton' ? 'TON' : '⭐'})`;
+            document.getElementById('tgmarketHeader').textContent = `📈 Цена на TG Market (${currency === 'ton' ? 'TON' : '⭐'})`;
+
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const ton = parseFloat(row.dataset.ton);
+                const stars = parseFloat(row.dataset.stars);
+                let thermosPrice, tgPrice;
+
+                if (currency === 'ton') {
+                    thermosPrice = ton;
+                    tgPrice = stars / rate;
+                } else {
+                    thermosPrice = ton * rate;
+                    tgPrice = stars;
+                }
+
+                row.querySelector('.thermos-price').textContent = thermosPrice.toFixed(2);
+                row.querySelector('.tgmarket-price').textContent = tgPrice.toFixed(2);
+
+                const deltaCell = row.querySelector('.delta');
+                if (thermosPrice) {
+                    const delta = ((tgPrice - thermosPrice) / thermosPrice * 100).toFixed(2);
+                    deltaCell.textContent = `${delta}%`;
+                    deltaCell.className = 'delta ' + (delta >= 0 ? 'positive' : 'negative');
+                } else {
+                    deltaCell.textContent = '-';
+                    deltaCell.className = 'delta';
+                }
+            });
+        }
+
+        document.getElementById('exchangeRate').addEventListener('input', updatePrices);
+        document.getElementById('currencySelect').addEventListener('change', updatePrices);
+        window.addEventListener('DOMContentLoaded', updatePrices);
+    </script>
 </body>
 </html>

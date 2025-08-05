@@ -43,15 +43,12 @@ def load_data():
     for gift, model in keys:
         t_price = thermos_map[(gift, model)]
         tg_price = tg_map[(gift, model)]
-        delta = (
-            round((tg_price - t_price) / t_price * 100, 2) if t_price else None
-        )
+
         result.append(
             {
                 "tg_name": f"{gift} — {model}",
                 "thermos_price": t_price,
                 "tgmarket_price": tg_price,
-                "delta_percent": delta,
             }
         )
     return result

@@ -19,6 +19,20 @@ h2 {
 }
 
 
+.settings {
+    margin-bottom: 20px;
+}
+
+.settings label {
+    margin-right: 10px;
+}
+
+.settings input,
+.settings select {
+    margin-right: 20px;
+}
+
+
 table {
     width: 100%;
     border-collapse: collapse;
