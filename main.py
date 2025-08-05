@@ -6,11 +6,12 @@ from jinja2 import Environment, FileSystemLoader
 import uvicorn
 import json
 import subprocess
+import shutil
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 PARSERS_DIR = BASE_DIR / "gifts_parcers"
-THERMOS_FILE = PARSERS_DIR / "thermos_gifts.json"
+THERMOS_FILE = BASE_DIR / "thermos_gifts.json"
 TG_FILE = BASE_DIR / "tg_gifts_resale.json"
 
 
@@ -36,21 +37,23 @@ def load_data():
     thermos_map = {(g["gift"], g["model"]): g.get("price") for g in thermos_data}
     tg_map = {(g["gift"], g["model"]): g.get("price") for g in tg_data}
 
-    keys = sorted(set(thermos_map) | set(tg_map))
+    # Show only gifts present in both sources
+    keys = sorted(set(thermos_map) & set(tg_map))
     result = []
     for gift, model in keys:
-        t_price = thermos_map.get((gift, model))
-        tg_price = tg_map.get((gift, model))
-        if t_price and tg_price:
-            delta = round((tg_price - t_price) / t_price * 100, 2)
-        else:
-            delta = None
-        result.append({
-            "tg_name": f"{gift} — {model}",
-            "thermos_price": t_price,
-            "tgmarket_price": tg_price,
-            "delta_percent": delta
-        })
+        t_price = thermos_map[(gift, model)]
+        tg_price = tg_map[(gift, model)]
+        delta = (
+            round((tg_price - t_price) / t_price * 100, 2) if t_price else None
+        )
+        result.append(
+            {
+                "tg_name": f"{gift} — {model}",
+                "thermos_price": t_price,
+                "tgmarket_price": tg_price,
+                "delta_percent": delta,
+            }
+        )
     return result
 
 @app.get("/", response_class=HTMLResponse)
@@ -64,6 +67,9 @@ async def index(request: Request):
 async def update(request: Request):
     try:
         subprocess.run(["python", "gifts_parcers/parce_thermos_gifts.py"], cwd=BASE_DIR, check=True)
+        src = PARSERS_DIR / "thermos_gifts.json"
+        if src.exists():
+            shutil.move(src, THERMOS_FILE)
         subprocess.run(["python", "gifts_parcers/parce_tg_market_kurigram.py"], cwd=BASE_DIR, check=True)
     except subprocess.CalledProcessError as exc:
         return HTMLResponse(
