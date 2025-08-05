@@ -21,7 +21,10 @@ else:
 PARSERS_DIR = BASE_DIR / "gifts_parcers"
 THERMOS_FILE = BASE_DIR / "thermos_gifts.json"
 TG_FILE = BASE_DIR / "tg_gifts_resale.json"
-
+# Исполняемые файлы парсеров (учитываем расширение под Windows)
+EXE_SUFFIX = ".exe" if sys.platform.startswith("win") else ""
+TG_PARSER = PARSERS_DIR / f"parce_tg_market_kurigram{EXE_SUFFIX}"
+THERMOS_PARSER = PARSERS_DIR / f"parce_thermos_gifts{EXE_SUFFIX}"
 
 app = FastAPI()
 
@@ -80,11 +83,20 @@ async def index(request: Request):
 @app.post("/update")
 async def update(request: Request):
     try:
-        from gifts_parcers.parce_tg_market_kurigram import main as tg_parse
-        from gifts_parcers.parce_thermos_gifts import main as thermos_parse
+        async def run_parser(path: Path) -> None:
+            proc = await asyncio.create_subprocess_exec(str(path), cwd=PARSERS_DIR)
+            await proc.wait()
+            if proc.returncode:
+                raise RuntimeError(f"{path.name} exited with code {proc.returncode}")
 
-        await asyncio.to_thread(lambda: asyncio.run(tg_parse()))
-        await asyncio.to_thread(thermos_parse)
+        # Запускаем парсеры последовательно
+        await run_parser(TG_PARSER)
+        await run_parser(THERMOS_PARSER)
+
+        # Переносим результаты в корень панели
+        src = PARSERS_DIR / "tg_gifts_resale.json"
+        if src.exists():
+            shutil.move(src, TG_FILE)
 
         src = PARSERS_DIR / "thermos_gifts.json"
         if src.exists():

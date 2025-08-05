@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from time import perf_counter
 from pyrogram import Client, raw
 from datetime import datetime
+import sys
 from pathlib import Path
 try:
     from pyrogram.errors import FloodWait, RPCError
@@ -15,7 +16,9 @@ except Exception:
 API_ID = 21757287
 API_HASH = "78389065683ede6c2d7e2b308a634f88"
 BASE_DIR = Path(__file__).resolve().parent
-SESSION = BASE_DIR / "kurigram_resale"
+
+EXE_DIR = Path(sys.argv[0]).resolve().parent
+SESSION = str(EXE_DIR / "kurigram_resale")
 
 OUT_FILE = "tg_gifts_resale.json"
 PRETTY_JSON = True                  # True → indent=2
