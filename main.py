@@ -6,12 +6,11 @@ from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
 import uvicorn
 import json
-import subprocess
 import sys
 import shutil
 import asyncio
 from pathlib import Path
-import os
+
 
 # BASE_DIR = Path(__file__).resolve().parent
 if getattr(sys, "frozen", False):
@@ -81,26 +80,18 @@ async def index(request: Request):
 @app.post("/update")
 async def update(request: Request):
     try:
-        await asyncio.to_thread(
-            subprocess.run,
-            [sys.executable, "gifts_parcers/parce_tg_market_kurigram.py"],
-            cwd=BASE_DIR,
-            check=True,
-        )
-        await asyncio.to_thread(
-            subprocess.run,
-            [sys.executable, "gifts_parcers/parce_thermos_gifts.py"],
-            cwd=BASE_DIR,
-            check=True,
-        )
+        from gifts_parcers.parce_tg_market_kurigram import main as tg_parse
+        from gifts_parcers.parce_thermos_gifts import main as thermos_parse
+
+        await asyncio.to_thread(lambda: asyncio.run(tg_parse()))
+        await asyncio.to_thread(thermos_parse)
+
         src = PARSERS_DIR / "thermos_gifts.json"
         if src.exists():
             shutil.move(src, THERMOS_FILE)
 
-    except subprocess.CalledProcessError as exc:
-        return JSONResponse(
-            {"status": "error", "detail": str(exc)}, status_code=500
-        )
+    except Exception as exc:
+        return JSONResponse({"status": "error", "detail": str(exc)}, status_code=500)
     return JSONResponse({"status": "ok"})
 
 
