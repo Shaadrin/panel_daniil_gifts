@@ -13,18 +13,28 @@
 
     <div class="settings">
         <label for="exchangeRate">Курс 1 TON в звёздах:</label>
-        <input type="number" id="exchangeRate" value="1" step="any">
+        <input type="number" id="exchangeRate" step="any">
         <label for="currencySelect">Отображать цены в:</label>
         <select id="currencySelect">
             <option value="ton">TON</option>
             <option value="stars">Звезды</option>
         </select>
     </div>
+    <div id="noRateMessage" class="no-rate-message" style="display:none">укажите курс ton/stars</div>
     <div class="filters">
         <input type="text" id="searchInput" placeholder="Поиск по подарку или модели">
-        <label>Цена от: <input type="number" id="minPrice" step="any"></label>
-        <label>до: <input type="number" id="maxPrice" step="any"></label>
-        <label>Мин. % выгоды: <input type="number" id="minDelta" step="any"></label>
+        <div class="filter-group">
+            <label for="minPrice">Цена от:</label>
+            <input type="number" id="minPrice" step="any">
+        </div>
+        <div class="filter-group">
+            <label for="maxPrice">до:</label>
+            <input type="number" id="maxPrice" step="any">
+        </div>
+        <div class="filter-group">
+            <label for="minDelta">Мин. % выгоды:</label>
+            <input type="number" id="minDelta" step="any">
+        </div>
     </div>
       <h2>Сравнение цен на подарки Telegram</h2>
     <table>
@@ -51,7 +61,7 @@
           async function updateData() {
               const statusEl = document.getElementById('status');
               const btn = document.getElementById('refreshButton');
-              statusEl.textContent = 'Идёт сбор данных...';
+              statusEl.textContent = '⏳ Идёт сбор данных...';
               btn.disabled = true;
               try {
                   const resp = await fetch('/update', { method: 'POST' });
@@ -66,9 +76,22 @@
           function updatePrices() {
             const rateInput = document.getElementById('exchangeRate');
             const select = document.getElementById('currencySelect');
-            const rate = parseFloat(rateInput.value) || 1;
+            const rate = parseFloat(rateInput.value);
             const currency = select.value;
+            const table = document.querySelector('table');
+            const filters = document.querySelector('.filters');
+            const msg = document.getElementById('noRateMessage');
 
+            if (isNaN(rate) || rate <= 0) {
+                table.style.display = 'none';
+                filters.style.display = 'none';
+                msg.style.display = 'block';
+                return;
+            } else {
+                table.style.display = '';
+                filters.style.display = '';
+                msg.style.display = 'none';
+            }
             document.getElementById('thermosHeader').textContent = `💰 Цена на Thermos (${currency === 'ton' ? 'TON' : '⭐'})`;
             document.getElementById('tgmarketHeader').textContent = `📈 Цена на TG Market (${currency === 'ton' ? 'TON' : '⭐'})`;
 

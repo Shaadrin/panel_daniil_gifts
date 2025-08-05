@@ -31,7 +31,38 @@ h2 {
 .settings select {
     margin-right: 20px;
 }
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+}
 
+.filters .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.filters input[type="text"],
+.filters input[type="number"] {
+    padding: 5px;
+}
+
+.filters input[type="text"] {
+    flex: 1 1 250px;
+}
+
+.no-rate-message {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #555;
+}
 
 table {
     width: 100%;
