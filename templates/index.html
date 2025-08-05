@@ -48,7 +48,7 @@
                     <th>🎁 Подарок Telegram</th>
                     <th id="thermosHeader">💰 Цена на Thermos (TON)</th>
                     <th id="tgmarketHeader">📈 Цена на TG Market (⭐)</th>
-                    <th>📊 Разница (%)</th>
+                    <th id="deltaHeader" class="sortable">📊 Разница (%)</th>
                 </tr>
             </thead>
             <tbody>
@@ -67,6 +67,7 @@
 
     <script>
         const gifs = {{ gif_files|safe }};
+        let deltaSortAsc = false;
         async function updateData() {
             const btn = document.getElementById('refreshButton');
             const overlay = document.getElementById('loadingOverlay');
@@ -158,6 +159,17 @@
                 row.style.display = (matchSearch && matchPrice && matchDelta) ? '' : 'none';
             });
         }
+        function sortByDelta() {
+            const tbody = document.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            rows.sort((a, b) => {
+                const aDelta = parseFloat(a.querySelector('.delta').textContent) || 0;
+                const bDelta = parseFloat(b.querySelector('.delta').textContent) || 0;
+                return deltaSortAsc ? aDelta - bDelta : bDelta - aDelta;
+            });
+            rows.forEach(row => tbody.appendChild(row));
+            deltaSortAsc = !deltaSortAsc;
+        }
 
         document.getElementById('refreshButton').addEventListener('click', updateData);
         document.getElementById('exchangeRate').addEventListener('input', updatePrices);
@@ -166,6 +178,7 @@
         document.getElementById('minPrice').addEventListener('input', applyFilters);
         document.getElementById('maxPrice').addEventListener('input', applyFilters);
         document.getElementById('minDelta').addEventListener('input', applyFilters);
+        document.getElementById('deltaHeader').addEventListener('click', sortByDelta);
         window.addEventListener('DOMContentLoaded', updatePrices);
     </script>
 </body>

@@ -26,19 +26,24 @@ h2 {
     font-size: 1.5rem;
 }
 
+th.sortable {
+    cursor: pointer;
+}
+
+
 .refresh-btn {
     padding: 8px 16px;
     margin-bottom: 20px;
     font-size: 15px;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(231, 191, 157, 0.562);
     border: 1px solid rgba(180, 180, 180, 0.6);
     border-radius: 6px;
     transition: background 0.2s, transform 0.2s;
 }
 
 .refresh-btn:hover {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(110, 110, 110, 0.473);
     transform: translateY(-1px);
 }
 

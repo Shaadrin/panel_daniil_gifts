@@ -13,7 +13,8 @@ import asyncio
 from pathlib import Path
 import os
 
-BASE_DIR = Path(__file__).resolve().parent
+# BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
 PARSERS_DIR = BASE_DIR / "gifts_parcers"
 THERMOS_FILE = BASE_DIR / "thermos_gifts.json"
 TG_FILE = BASE_DIR / "tg_gifts_resale.json"
