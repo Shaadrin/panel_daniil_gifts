@@ -21,6 +21,12 @@
             <option value="stars">Звезды</option>
         </select>
     </div>
+    <div class="filters">
+        <input type="text" id="searchInput" placeholder="Поиск по подарку или модели">
+        <label>Цена от: <input type="number" id="minPrice" step="any"></label>
+        <label>до: <input type="number" id="maxPrice" step="any"></label>
+        <label>Мин. % выгоды: <input type="number" id="minDelta" step="any"></label>
+    </div>
     <h2>Сравнение цен на подарки Telegram</h2>
     <table>
         <thead>
@@ -78,10 +84,34 @@
                     deltaCell.className = 'delta';
                 }
             });
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const minPrice = parseFloat(document.getElementById('minPrice').value);
+            const maxPrice = parseFloat(document.getElementById('maxPrice').value);
+            const minDelta = parseFloat(document.getElementById('minDelta').value);
+
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const name = row.cells[0].textContent.toLowerCase();
+                const price = parseFloat(row.querySelector('.thermos-price').textContent) || 0;
+                const delta = parseFloat(row.querySelector('.delta').textContent) || 0;
+
+                const matchSearch = name.includes(search);
+                const matchPrice = (isNaN(minPrice) || price >= minPrice) && (isNaN(maxPrice) || price <= maxPrice);
+                const matchDelta = isNaN(minDelta) || delta >= minDelta;
+
+                row.style.display = (matchSearch && matchPrice && matchDelta) ? '' : 'none';
+            });
         }
 
         document.getElementById('exchangeRate').addEventListener('input', updatePrices);
         document.getElementById('currencySelect').addEventListener('change', updatePrices);
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('minPrice').addEventListener('input', applyFilters);
+        document.getElementById('maxPrice').addEventListener('input', applyFilters);
+        document.getElementById('minDelta').addEventListener('input', applyFilters);
         window.addEventListener('DOMContentLoaded', updatePrices);
     </script>
 </body>
