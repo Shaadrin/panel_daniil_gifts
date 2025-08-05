@@ -6,74 +6,84 @@
     <title>Анализ подарков Telegram</title>
     <link rel="stylesheet" href="/static/styles.css">
 </head>
-
-    <body>
+<body>
+    <div id="loadingOverlay" class="loading-overlay">
+        <img src="/static/loading.gif" alt="loading" class="loading-gif">
+        <div class="loading-text">Идёт сбор данных. Обычно это занимает 2 минуты.</div>
+    </div>
+    <div id="mainContent">
         <button id="refreshButton" class="refresh-btn" type="button">Обновить данные</button>
         <div id="status"></div>
 
-    <div class="settings">
-        <label for="exchangeRate">Курс 1 TON в звёздах:</label>
-        <input type="number" id="exchangeRate" step="any">
-        <label for="currencySelect">Отображать цены в:</label>
-        <select id="currencySelect">
-            <option value="ton">TON</option>
-            <option value="stars">Звезды</option>
-        </select>
+        <div class="settings">
+            <label for="exchangeRate">Курс 1 TON в звёздах:</label>
+            <input type="number" id="exchangeRate" step="any">
+            <label for="currencySelect">Отображать цены в:</label>
+            <select id="currencySelect">
+                <option value="ton">TON</option>
+                <option value="stars">Звезды</option>
+            </select>
+        </div>
+        <div id="noRateMessage" class="no-rate-message" style="display:none">укажите курс ton/stars</div>
+        <div class="filters">
+            <input type="text" id="searchInput" placeholder="Поиск по подарку или модели">
+            <div class="filter-group">
+                <label for="minPrice">Цена от:</label>
+                <input type="number" id="minPrice" step="any">
+            </div>
+            <div class="filter-group">
+                <label for="maxPrice">до:</label>
+                <input type="number" id="maxPrice" step="any">
+            </div>
+            <div class="filter-group">
+                <label for="minDelta">Мин. % выгоды:</label>
+                <input type="number" id="minDelta" step="any">
+            </div>
+        </div>
+        <h2>Сравнение цен на подарки Telegram</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>🎁 Подарок Telegram</th>
+                    <th id="thermosHeader">💰 Цена на Thermos (TON)</th>
+                    <th id="tgmarketHeader">📈 Цена на TG Market (⭐)</th>
+                    <th>📊 Разница (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for gift in gifts %}
+                <tr data-ton="{{ gift.thermos_price }}" data-stars="{{ gift.tgmarket_price }}">
+                    <td>{{ gift.tg_name }}</td>
+                    <td class="thermos-price"></td>
+                    <td class="tgmarket-price"></td>
+                    <td class="delta"></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    <div id="noRateMessage" class="no-rate-message" style="display:none">укажите курс ton/stars</div>
-    <div class="filters">
-        <input type="text" id="searchInput" placeholder="Поиск по подарку или модели">
-        <div class="filter-group">
-            <label for="minPrice">Цена от:</label>
-            <input type="number" id="minPrice" step="any">
-        </div>
-        <div class="filter-group">
-            <label for="maxPrice">до:</label>
-            <input type="number" id="maxPrice" step="any">
-        </div>
-        <div class="filter-group">
-            <label for="minDelta">Мин. % выгоды:</label>
-            <input type="number" id="minDelta" step="any">
-        </div>
-    </div>
-      <h2>Сравнение цен на подарки Telegram</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>🎁 Подарок Telegram</th>
-                <th id="thermosHeader">💰 Цена на Thermos (TON)</th>
-                <th id="tgmarketHeader">📈 Цена на TG Market (⭐)</th>
-                <th>📊 Разница (%)</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for gift in gifts %}
-            <tr data-ton="{{ gift.thermos_price }}" data-stars="{{ gift.tgmarket_price }}">
-                <td>{{ gift.tg_name }}</td>
-                <td class="thermos-price"></td>
-                <td class="tgmarket-price"></td>
-                <td class="delta"></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-      <script>
-          async function updateData() {
-              const statusEl = document.getElementById('status');
-              const btn = document.getElementById('refreshButton');
-              statusEl.textContent = '⏳ Идёт сбор данных...';
-              btn.disabled = true;
-              try {
-                  const resp = await fetch('/update', { method: 'POST' });
-                  if (!resp.ok) throw new Error('Network response was not ok');
-                  window.location.reload();
-              } catch (err) {
-                  statusEl.textContent = 'Ошибка при обновлении данных';
-                  btn.disabled = false;
-              }
-          }
 
-          function updatePrices() {
+
+    <script>
+        async function updateData() {
+            const btn = document.getElementById('refreshButton');
+            const overlay = document.getElementById('loadingOverlay');
+            const content = document.getElementById('mainContent');
+            overlay.style.display = 'flex';
+            content.style.display = 'none';
+            btn.disabled = true;
+            try {
+                const resp = await fetch('/update', { method: 'POST' });
+                if (!resp.ok) throw new Error('Network response was not ok');
+                window.location.reload();
+            } catch (err) {
+                overlay.style.display = 'none';
+                content.style.display = '';
+                btn.disabled = false;
+            }
+        }
+
+        function updatePrices() {
             const rateInput = document.getElementById('exchangeRate');
             const select = document.getElementById('currencySelect');
             const rate = parseFloat(rateInput.value);
@@ -143,14 +153,14 @@
             });
         }
 
-          document.getElementById('refreshButton').addEventListener('click', updateData);
-          document.getElementById('exchangeRate').addEventListener('input', updatePrices);
-          document.getElementById('currencySelect').addEventListener('change', updatePrices);
-          document.getElementById('searchInput').addEventListener('input', applyFilters);
-          document.getElementById('minPrice').addEventListener('input', applyFilters);
-          document.getElementById('maxPrice').addEventListener('input', applyFilters);
-          document.getElementById('minDelta').addEventListener('input', applyFilters);
-          window.addEventListener('DOMContentLoaded', updatePrices);
-      </script>
-    </body>
-    </html>
+        document.getElementById('refreshButton').addEventListener('click', updateData);
+        document.getElementById('exchangeRate').addEventListener('input', updatePrices);
+        document.getElementById('currencySelect').addEventListener('change', updatePrices);
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('minPrice').addEventListener('input', applyFilters);
+        document.getElementById('maxPrice').addEventListener('input', applyFilters);
+        document.getElementById('minDelta').addEventListener('input', applyFilters);
+        window.addEventListener('DOMContentLoaded', updatePrices);
+    </script>
+</body>
+</html>

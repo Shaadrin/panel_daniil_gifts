@@ -96,3 +96,34 @@ tr:nth-child(even) {
     color: #dc3545;
     font-weight: bold;
 }
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.loading-gif {
+    width: 100px;
+    height: 100px;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    font-size: 28px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
