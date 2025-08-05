@@ -14,7 +14,11 @@ from pathlib import Path
 import os
 
 # BASE_DIR = Path(__file__).resolve().parent
-BASE_DIR = Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys._MEIPASS)
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+
 PARSERS_DIR = BASE_DIR / "gifts_parcers"
 THERMOS_FILE = BASE_DIR / "thermos_gifts.json"
 TG_FILE = BASE_DIR / "tg_gifts_resale.json"
@@ -22,9 +26,9 @@ TG_FILE = BASE_DIR / "tg_gifts_resale.json"
 
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
-templates = Environment(loader=FileSystemLoader("templates"))
+templates = Environment(loader=FileSystemLoader(BASE_DIR / "templates"))
 
 # Здесь можно будет позже подтягивать реальные данные
 DATA_FILE = "gifts_data.json"
@@ -101,4 +105,11 @@ async def update(request: Request):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    import sys, uvicorn
+    is_exe = getattr(sys, "frozen", False)
+    uvicorn.run(
+        app,                    # ← передаём прямо объект
+        host="127.0.0.1",
+        port=8000,
+        reload=False
+    )
