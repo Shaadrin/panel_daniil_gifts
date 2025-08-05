@@ -1,5 +1,6 @@
 # main.py
 from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from jinja2 import Environment, FileSystemLoader
@@ -8,6 +9,7 @@ import json
 import subprocess
 import sys
 import shutil
+import asyncio
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -61,15 +63,17 @@ async def index(request: Request):
     return template.render(request=request, gifts=data)
 
 
-@app.post("/update", response_class=HTMLResponse)
+@app.post("/update")
 async def update(request: Request):
     try:
-        subprocess.run(
+        await asyncio.to_thread(
+            subprocess.run,
             [sys.executable, "gifts_parcers/parce_tg_market_kurigram.py"],
             cwd=BASE_DIR,
             check=True,
         )
-        subprocess.run(
+        await asyncio.to_thread(
+            subprocess.run,
             [sys.executable, "gifts_parcers/parce_thermos_gifts.py"],
             cwd=BASE_DIR,
             check=True,
@@ -77,14 +81,12 @@ async def update(request: Request):
         src = PARSERS_DIR / "thermos_gifts.json"
         if src.exists():
             shutil.move(src, THERMOS_FILE)
-        subprocess.run(["python", "gifts_parcers/parce_tg_market_kurigram.py"], cwd=BASE_DIR, check=True)
+
     except subprocess.CalledProcessError as exc:
-        return HTMLResponse(
-            content=f"Ошибка при обновлении данных: {exc}", status_code=500
+        return JSONResponse(
+            {"status": "error", "detail": str(exc)}, status_code=500
         )
-    data = load_data()
-    template = templates.get_template("index.html")
-    return template.render(request=request, gifts=data)
+    return JSONResponse({"status": "ok"})
 
 
 if __name__ == "__main__":

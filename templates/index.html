@@ -7,10 +7,9 @@
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 
-<body>
-    <form action="/update" method="post">
-        <button class="refresh-btn" type="submit">Обновить данные</button>
-    </form>
+    <body>
+        <button id="refreshButton" class="refresh-btn" type="button">Обновить данные</button>
+        <div id="status"></div>
 
     <div class="settings">
         <label for="exchangeRate">Курс 1 TON в звёздах:</label>
@@ -27,7 +26,7 @@
         <label>до: <input type="number" id="maxPrice" step="any"></label>
         <label>Мин. % выгоды: <input type="number" id="minDelta" step="any"></label>
     </div>
-    <h2>Сравнение цен на подарки Telegram</h2>
+      <h2>Сравнение цен на подарки Telegram</h2>
     <table>
         <thead>
             <tr>
@@ -48,8 +47,23 @@
             {% endfor %}
         </tbody>
     </table>
-    <script>
-        function updatePrices() {
+      <script>
+          async function updateData() {
+              const statusEl = document.getElementById('status');
+              const btn = document.getElementById('refreshButton');
+              statusEl.textContent = 'Идёт сбор данных...';
+              btn.disabled = true;
+              try {
+                  const resp = await fetch('/update', { method: 'POST' });
+                  if (!resp.ok) throw new Error('Network response was not ok');
+                  window.location.reload();
+              } catch (err) {
+                  statusEl.textContent = 'Ошибка при обновлении данных';
+                  btn.disabled = false;
+              }
+          }
+
+          function updatePrices() {
             const rateInput = document.getElementById('exchangeRate');
             const select = document.getElementById('currencySelect');
             const rate = parseFloat(rateInput.value) || 1;
@@ -106,13 +120,14 @@
             });
         }
 
-        document.getElementById('exchangeRate').addEventListener('input', updatePrices);
-        document.getElementById('currencySelect').addEventListener('change', updatePrices);
-        document.getElementById('searchInput').addEventListener('input', applyFilters);
-        document.getElementById('minPrice').addEventListener('input', applyFilters);
-        document.getElementById('maxPrice').addEventListener('input', applyFilters);
-        document.getElementById('minDelta').addEventListener('input', applyFilters);
-        window.addEventListener('DOMContentLoaded', updatePrices);
-    </script>
-</body>
-</html>
+          document.getElementById('refreshButton').addEventListener('click', updateData);
+          document.getElementById('exchangeRate').addEventListener('input', updatePrices);
+          document.getElementById('currencySelect').addEventListener('change', updatePrices);
+          document.getElementById('searchInput').addEventListener('input', applyFilters);
+          document.getElementById('minPrice').addEventListener('input', applyFilters);
+          document.getElementById('maxPrice').addEventListener('input', applyFilters);
+          document.getElementById('minDelta').addEventListener('input', applyFilters);
+          window.addEventListener('DOMContentLoaded', updatePrices);
+      </script>
+    </body>
+    </html>
