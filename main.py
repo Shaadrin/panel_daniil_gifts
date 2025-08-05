@@ -6,6 +6,7 @@ from jinja2 import Environment, FileSystemLoader
 import uvicorn
 import json
 import subprocess
+import sys
 import shutil
 from pathlib import Path
 
@@ -63,7 +64,16 @@ async def index(request: Request):
 @app.post("/update", response_class=HTMLResponse)
 async def update(request: Request):
     try:
-        subprocess.run(["python", "gifts_parcers/parce_thermos_gifts.py"], cwd=BASE_DIR, check=True)
+        subprocess.run(
+            [sys.executable, "gifts_parcers/parce_tg_market_kurigram.py"],
+            cwd=BASE_DIR,
+            check=True,
+        )
+        subprocess.run(
+            [sys.executable, "gifts_parcers/parce_thermos_gifts.py"],
+            cwd=BASE_DIR,
+            check=True,
+        )
         src = PARSERS_DIR / "thermos_gifts.json"
         if src.exists():
             shutil.move(src, THERMOS_FILE)
