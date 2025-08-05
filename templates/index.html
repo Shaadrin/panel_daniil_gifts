@@ -8,7 +8,7 @@
 </head>
 <body>
     <div id="loadingOverlay" class="loading-overlay">
-        <img src="/static/loading.gif" alt="loading" class="loading-gif">
+        <img id="loadingGif" src="" alt="loading" class="loading-gif">
         <div class="loading-text">Идёт сбор данных. Обычно это занимает 2 минуты.</div>
     </div>
     <div id="mainContent">
@@ -65,10 +65,15 @@
 
 
     <script>
+        const gifs = {{ gif_files|safe }};
         async function updateData() {
             const btn = document.getElementById('refreshButton');
             const overlay = document.getElementById('loadingOverlay');
             const content = document.getElementById('mainContent');
+            const gifElem = document.getElementById('loadingGif');
+            if (Array.isArray(gifs) && gifs.length > 0) {
+                gifElem.src = gifs[Math.floor(Math.random() * gifs.length)];
+            }
             overlay.style.display = 'flex';
             content.style.display = 'none';
             btn.disabled = true;

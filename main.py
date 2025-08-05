@@ -11,6 +11,7 @@ import sys
 import shutil
 import asyncio
 from pathlib import Path
+import os
 
 BASE_DIR = Path(__file__).resolve().parent
 PARSERS_DIR = BASE_DIR / "gifts_parcers"
@@ -59,8 +60,17 @@ def load_data():
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     data = load_data()
+    gifs_dir = BASE_DIR / "static" / "gifs"
+    gif_files = []
+    if gifs_dir.exists():
+        gif_files = [f"/static/gifs/{p.name}" for p in gifs_dir.iterdir() if p.suffix.lower() == ".gif"]
     template = templates.get_template("index.html")
-    return template.render(request=request, gifts=data)
+    return template.render(
+        request=request,
+        gifts=data,
+        gif_files=json.dumps(gif_files),
+    )
+
 
 
 @app.post("/update")
